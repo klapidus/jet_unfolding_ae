@@ -53,7 +53,8 @@ class JetPicturesDataset(Dataset):
         return len(self.jets_in)
 
     def __getitem__(self, idx):
-        return self.jets_in[idx], self.jets_out[idx]
+        sample = {'pl': self.jets_in[idx], 'dl': self.jets_out[idx]}
+        return sample
 
 
 #if __name__ == '__main__':
@@ -73,9 +74,7 @@ _jetsDL = get_jets(valsDL)
 print('PL size = ', len(_jetsPL))
 print('DL size = ', len(_jetsDL))
 
-
-
-bins = np.linspace(-0.4, 0.4, num=utils.N_IMAGE_BINS+1)
+BINS = np.linspace(-0.4, 0.4, num=utils.N_IMAGE_BINS+1)
 #print(len(bins))
 
 jetsPL_train = []
@@ -83,17 +82,22 @@ jetsDL_train = []
 jetsPL_test = []
 jetsDL_test = []
 
+jet_images_pl_test = []
+jet_images_dl_test = []
+
 for idx, _ in enumerate(_jetsPL):
     jet_pl = _jetsPL[idx]
     jet_dl = _jetsDL[idx]
-    h_pl, _, _ = np.histogram2d(jet_pl[:, 1], jet_pl[:, 2], bins=bins, weights=jet_pl[:, 0])
-    h_dl, _, _ = np.histogram2d(jet_dl[:, 1], jet_dl[:, 2], bins=bins, weights=jet_dl[:, 0])
+    h_pl, _, _ = np.histogram2d(jet_pl[:, 1], jet_pl[:, 2], bins=BINS, weights=jet_pl[:, 0])
+    h_dl, _, _ = np.histogram2d(jet_dl[:, 1], jet_dl[:, 2], bins=BINS, weights=jet_dl[:, 0])
     if np.random.randint(2)==1:
         jetsPL_train.append(torch.from_numpy(h_pl.astype(np.float32)))
         jetsDL_train.append(torch.from_numpy(h_dl.astype(np.float32)))
     else:
         jetsPL_test.append(torch.from_numpy(h_pl.astype(np.float32)))
         jetsDL_test.append(torch.from_numpy(h_dl.astype(np.float32)))
+        jet_images_pl_test.append(h_pl)
+        jet_images_dl_test.append(h_dl)
 
 
 fig = plt.figure(figsize=(30, 30))
@@ -102,8 +106,8 @@ for idx, _ in enumerate(_jetsPL):
         break
     jet_pl = _jetsPL[idx]
     jet_dl = _jetsDL[idx]
-    h_pl, _, _ = np.histogram2d(jet_pl[:, 1], jet_pl[:, 2], bins=bins, weights=jet_pl[:, 0])
-    h_dl, _, _ = np.histogram2d(jet_dl[:, 1], jet_dl[:, 2], bins=bins, weights=jet_dl[:, 0])
+    h_pl, _, _ = np.histogram2d(jet_pl[:, 1], jet_pl[:, 2], bins=BINS, weights=jet_pl[:, 0])
+    h_dl, _, _ = np.histogram2d(jet_dl[:, 1], jet_dl[:, 2], bins=BINS, weights=jet_dl[:, 0])
     # ax = fig.add_subplot(5, 5, idx + 1)
     # ax.matshow(h_dl, interpolation='none')
     #ax = fig.add_subplot(5, 5, idx + 1)
