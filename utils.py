@@ -1,0 +1,1 @@
+N_IMAGE_BINS = 40

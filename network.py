@@ -3,11 +3,13 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 
+import utils
+
 
 class Encoder(nn.Module):
     def __init__(self, interm_size=32, latent_size=32, act=torch.relu):
         super(Encoder, self).__init__()
-        self.fc1 = nn.Linear(120, interm_size)
+        self.fc1 = nn.Linear(utils.N_IMAGE_BINS*utils.N_IMAGE_BINS, interm_size)
         self.fc2 = nn.Linear(interm_size, latent_size)
         self.act = act
 
@@ -21,12 +23,13 @@ class Decoder(nn.Module):
     def __init__(self, interm_size=32, latent_size=32, act=torch.relu):
         super(Decoder, self).__init__()
         self.fc1 = nn.Linear(latent_size, interm_size)
-        self.fc2 = nn.Linear(interm_size, 120)
+        self.fc2 = nn.Linear(interm_size, utils.N_IMAGE_BINS*utils.N_IMAGE_BINS)
         self.act = act
 
     def forward(self, x):
         interm = self.act(self.fc1(x))
-        output = torch.tanh(self.fc2(interm))
+        #output = torch.tanh(self.fc2(interm))
+        output = torch.sigmoid(self.fc2(interm))
         return output
 
 
@@ -40,7 +43,7 @@ class Net(nn.Module):
             self.optim = optim.Adam(self.parameters(), lr=lr, weight_decay=l2)
 
         def forward(self, x):
-            x = x.view(-1, 120)
+            x = x.view(-1, utils.N_IMAGE_BINS*utils.N_IMAGE_BINS)
             h = self.E(x)
             out = self.D(h)
             return out
@@ -50,6 +53,6 @@ class Net(nn.Module):
                 return self.D(h)
 
         def loss(self, x, target, **kwargs):
-            target = target.view(-1, 120)
+            target = target.view(-1, utils.N_IMAGE_BINS*utils.N_IMAGE_BINS)
             self._loss = self.loss_fn(x, target, **kwargs)
             return self._loss
