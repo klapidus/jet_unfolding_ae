@@ -29,12 +29,14 @@ class Decoder(nn.Module):
     def forward(self, x):
         interm = self.act(self.fc1(x))
         #output = torch.tanh(self.fc2(interm))
-        output = torch.sigmoid(self.fc2(interm))
+        # output = torch.sigmoid(self.fc2(interm))
+        output = torch.relu(self.fc2(interm))
         return output
 
 
 class Net(nn.Module):
-        def __init__(self, interm_size=32, latent_size=32, loss_fn=F.mse_loss, lr=1e-4, l2=0.):
+        # def __init__(self, interm_size=32, latent_size=32, loss_fn=F.mse_loss, lr=1e-4, l2=0.):
+        def __init__(self, interm_size=32, latent_size=32, loss_fn=F.mse_loss, lr=0., l2=0.):
             super(Net, self).__init__()
             self.E = Encoder(interm_size, latent_size)
             self.D = Decoder(interm_size, latent_size)

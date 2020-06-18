@@ -14,6 +14,14 @@ import utils
 
 _mnumber = 1000
 
+def norm_hist_to_max(hist):
+    max_ = np.amax(hist)
+    if max_ > 0:
+        h = np.divide(hist, max_)
+        return np.subtract(h, 1.0)
+    else:
+        return hist
+
 def get_jets(vals, rotate=True):
   jets = []
   start = 0
@@ -33,6 +41,8 @@ def get_jets(vals, rotate=True):
           #if jet_pt < 90 or jet_pt > 110:
           #    print('error? jet pt =', jet_pt)
           jet[:, 0] /= jet_pt
+          # const_max_pt = np.amax(jet[:, 0])
+          # jet[:, 0] /= const_max_pt
           #print("const pt after = ", jet1[:,0])
           #proper jet rotation
           #please note: this is not needed, when
@@ -41,6 +51,8 @@ def get_jets(vals, rotate=True):
               jetutils.align_jet_pc_to_pos_phi(jet)
           #print(jet)
           jets.append(jet)
+          # if len(jets) > 1000:
+          #     break
   return jets
 
 
@@ -90,7 +102,11 @@ for idx, _ in enumerate(_jetsPL):
     jet_dl = _jetsDL[idx]
     h_pl, _, _ = np.histogram2d(jet_pl[:, 1], jet_pl[:, 2], bins=BINS, weights=jet_pl[:, 0])
     h_dl, _, _ = np.histogram2d(jet_dl[:, 1], jet_dl[:, 2], bins=BINS, weights=jet_dl[:, 0])
-    if np.random.randint(2)==1:
+
+    h_pl = norm_hist_to_max(h_pl)
+    h_dl = norm_hist_to_max(h_dl)
+
+    if np.random.randint(2) == 1:
         jetsPL_train.append(torch.from_numpy(h_pl.astype(np.float32)))
         jetsDL_train.append(torch.from_numpy(h_dl.astype(np.float32)))
     else:
@@ -108,6 +124,11 @@ for idx, _ in enumerate(_jetsPL):
     jet_dl = _jetsDL[idx]
     h_pl, _, _ = np.histogram2d(jet_pl[:, 1], jet_pl[:, 2], bins=BINS, weights=jet_pl[:, 0])
     h_dl, _, _ = np.histogram2d(jet_dl[:, 1], jet_dl[:, 2], bins=BINS, weights=jet_dl[:, 0])
+
+    #h_plnp.divide(hist, np.amax(hist))
+    #print(h_pl.shape)
+
+    # print(h_pl)
     # ax = fig.add_subplot(5, 5, idx + 1)
     # ax.matshow(h_dl, interpolation='none')
     #ax = fig.add_subplot(5, 5, idx + 1)
