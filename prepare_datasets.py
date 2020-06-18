@@ -12,6 +12,8 @@ import jetutils
 
 import utils
 
+import energyflow
+
 _mnumber = 1000
 
 def norm_hist_to_max(hist):
@@ -52,8 +54,8 @@ def get_jets(vals, rotate=True):
               jetutils.align_jet_pc_to_pos_phi(jet)
           #print(jet)
           jets.append(jet)
-          # if len(jets) > 1000:
-          #     break
+          if len(jets) > 1000:
+              break
   return jets
 
 
@@ -97,6 +99,12 @@ jetsDL_test = []
 
 jet_images_pl_test = []
 jet_images_dl_test = []
+
+efpset = energyflow.EFPSet(('d<=', 4), measure='hadr', beta=0.5)
+masked_X = [x[x[:,0] > 0] for x in _jetsPL]
+X = efpset.compute(masked_X[3])
+#print(len(X))
+print(X.shape)
 
 for idx, _ in enumerate(_jetsPL):
     jet_pl = _jetsPL[idx]

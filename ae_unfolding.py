@@ -106,7 +106,7 @@ def test(models, loader, log=None):
 net = network.Net
 # net = network_toy.Net
 
-models = {'64-16': net(64,16), '128-16': net(128,16), '64-32': net(64,32), '128-32': net(128,32)}
+models = {'64-16': net(64,16), '256-128': net(256,128), '64-32': net(64,32), '128-32': net(128,32)}
 # models = {'64-2': net(64,2), '128-2': net(128,2), '64-32': net(64,32), '128-32': net(128,32)}
 # models.update({'64-4': net(64,4), '128-4': net(128,4), '64-8': net(64,8), '128-8': net(128,8)})
 
@@ -143,7 +143,7 @@ x_dl = [calcX(jetim) for jetim in jet_images_dl_test]
 rec_jet = []
 x_pl_rec = []
 # for k, m in models.items():
-model = models['128-16']
+model = models['256-128']
 for jet in jetsPL_test:
     with torch.no_grad():
         # print(model(jet).detach().numpy().reshape((utils.N_IMAGE_BINS, utils.N_IMAGE_BINS)))
