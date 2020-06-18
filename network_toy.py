@@ -30,7 +30,7 @@ class Decoder(nn.Module):
 
 
 class Net(nn.Module):
-        def __init__(self, latent_size=32, loss_fn=F.mse_loss, lr=1.e-3, l2=0.0):
+        def __init__(self, latent_size=32, loss_fn=F.mse_loss, lr=1.e-4, l2=0.0):
             super(Net, self).__init__()
             self.E = Encoder(latent_size)
             self.D = Decoder(latent_size)

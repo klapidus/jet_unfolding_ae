@@ -24,6 +24,10 @@ def dR(x,y):
     return np.sqrt(x*x + y*y)
 
 def calcX(jetimage):
+
+    jetimage = np.add(jetimage, 1.0)
+    jetimage = np.divide(jetimage, 2.0)
+
     X = 0.0
     norm = 0.0
     for ix, xedge in enumerate(BINS):
@@ -99,13 +103,14 @@ def test(models, loader, log=None):
     report = 'Test set:\n' + lines
     print(report)
 
-# net = network.Net
-net = network_toy.Net
+net = network.Net
+# net = network_toy.Net
 
+models = {'64-16': net(64,16), '128-16': net(128,16), '64-32': net(64,32), '128-32': net(128,32)}
 # models = {'64-2': net(64,2), '128-2': net(128,2), '64-32': net(64,32), '128-32': net(128,32)}
 # models.update({'64-4': net(64,4), '128-4': net(128,4), '64-8': net(64,8), '128-8': net(128,8)})
 
-models = {'32': net(32), '64': net(64), '128': net(128)}
+# models = {'32': net(32), '64': net(64), '128': net(128)}
 # models = {'4': net(4)}
 train_log = {k: [] for k in models}
 test_log = {k: [] for k in models}
@@ -113,7 +118,7 @@ test_log = {k: [] for k in models}
 training_loader = jet_dataloader_train
 test_loader = jet_dataloader_test
 
-for epoch in range(1, 20):
+for epoch in range(1, 10):
     for model in models.values():
         model.train()
     train(epoch, models, train_log)
@@ -138,12 +143,16 @@ x_dl = [calcX(jetim) for jetim in jet_images_dl_test]
 rec_jet = []
 x_pl_rec = []
 # for k, m in models.items():
-model = models['32']
+model = models['128-16']
 for jet in jetsPL_test:
-    image = model(jet).detach().numpy().reshape((utils.N_IMAGE_BINS, utils.N_IMAGE_BINS))
-    # rec_jet.append( m(jet) )
-    x_pl_rec.append(calcX(image))
-    # print(calcX(image))
+    with torch.no_grad():
+        # print(model(jet).detach().numpy().reshape((utils.N_IMAGE_BINS, utils.N_IMAGE_BINS)))
+        image = model(jet).detach().numpy().reshape((utils.N_IMAGE_BINS, utils.N_IMAGE_BINS))
+        x_pl_rec.append(calcX(image))
+        # print(jet)
+        # print(image)
+        # print(calcX(jet))
+        # print(calcX(image))
 
 hist_x_pl, _ = np.histogram(x_pl)
 hist_x_dl, _ = np.histogram(x_dl)
@@ -158,7 +167,7 @@ plt.axis((x1, x2, 0.0, y2))
 
 ax = fig.add_subplot(1, 2, 2)
 plt.hist(x_pl_rec, bins=40)
-# plt.axis((x1, x2, 0.0, y2))
+plt.axis((x1, x2, 0.0, y2))
 
 # ax = fig.add_subplot(1, 3, 3)
 # plt.hist(x_dl_unfolded)

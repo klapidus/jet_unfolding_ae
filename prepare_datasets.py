@@ -18,6 +18,7 @@ def norm_hist_to_max(hist):
     max_ = np.amax(hist)
     if max_ > 0:
         h = np.divide(hist, max_)
+        h = np.multiply(hist, 2.0)
         return np.subtract(h, 1.0)
     else:
         return hist
