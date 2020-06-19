@@ -7,9 +7,9 @@ import utils
 
 
 class Encoder(nn.Module):
-    def __init__(self, interm_size=32, latent_size=32, act=torch.relu):
+    def __init__(self, interm_size=32, latent_size=32, act=torch.sigmoid):
         super(Encoder, self).__init__()
-        self.fc1 = nn.Linear(utils.N_IMAGE_BINS*utils.N_IMAGE_BINS, interm_size)
+        self.fc1 = nn.Linear(utils.N_EFP, interm_size)
         self.fc2 = nn.Linear(interm_size, latent_size)
         self.act = act
 
@@ -20,10 +20,10 @@ class Encoder(nn.Module):
 
 
 class Decoder(nn.Module):
-    def __init__(self, interm_size=32, latent_size=32, act=torch.relu):
+    def __init__(self, interm_size=32, latent_size=32, act=torch.sigmoid):
         super(Decoder, self).__init__()
         self.fc1 = nn.Linear(latent_size, interm_size)
-        self.fc2 = nn.Linear(interm_size, utils.N_IMAGE_BINS*utils.N_IMAGE_BINS)
+        self.fc2 = nn.Linear(interm_size, utils.N_EFP)
         self.act = act
 
     def forward(self, x):
@@ -35,7 +35,7 @@ class Decoder(nn.Module):
 
 
 class Net(nn.Module):
-        def __init__(self, interm_size=32, latent_size=32, loss_fn=F.mse_loss, lr=1e-4, l2=0.):
+        def __init__(self, interm_size=32, latent_size=32, loss_fn=F.mse_loss, lr=1e-3, l2=0.):
             super(Net, self).__init__()
             self.E = Encoder(interm_size, latent_size)
             self.D = Decoder(interm_size, latent_size)
@@ -44,7 +44,7 @@ class Net(nn.Module):
             self.optim = optim.Adam(self.parameters(), lr=lr, weight_decay=l2)
 
         def forward(self, x):
-            x = x.view(-1, utils.N_IMAGE_BINS*utils.N_IMAGE_BINS)
+            x = x.view(-1, utils.N_EFP)
             h = self.E(x)
             out = self.D(h)
             return out
@@ -54,6 +54,6 @@ class Net(nn.Module):
                 return self.D(h)
 
         def loss(self, x, target, **kwargs):
-            target = target.view(-1, utils.N_IMAGE_BINS*utils.N_IMAGE_BINS)
+            target = target.view(-1, utils.N_EFP)
             self._loss = self.loss_fn(x, target, **kwargs)
             return self._loss
