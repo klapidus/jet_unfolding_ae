@@ -7,8 +7,8 @@ from torchvision import datasets, transforms
 import numpy as np
 import matplotlib.pyplot as plt
 
-from prepare_datasets import jet_dataloader_train, jet_dataloader_test, jetsPL_test, jetsDL_test, efps_pl_test
-from prepare_datasets import jet_images_pl_test, jet_images_dl_test, BINS
+from prepare_datasets import jet_dataloader_train, jet_dataloader_test, jetsPL_test, efps_pl_train, efps_pl_test
+# from prepare_datasets import jet_images_pl_test, BINS
 from prepare_datasets import normalization
 
 import network
@@ -18,7 +18,7 @@ import utils
 
 def train(epoch, models, log=None):
     #train_size = training_loader.__len__()
-    train_size = 400
+    train_size = len(efps_pl_train)
     for batch_idx, sample_batched in enumerate(training_loader):
         # print('batch_idx', batch_idx)
         for model in models.values():
@@ -65,7 +65,7 @@ def test(models, loader, log=None):
                 test_loss[k] += m.loss(output[k], sample_batched['pl'], reduction='sum').item()  # sum up batch loss
 
     for k in models:
-        test_loss[k] /= (test_size * utils.N_IMAGE_BINS * utils.N_IMAGE_BINS)
+        test_loss[k] /= (test_size * utils.N_EFP)
         if log is not None:
             log[k].append(test_loss[k])
 
@@ -88,7 +88,7 @@ test_log = {k: [] for k in models}
 training_loader = jet_dataloader_train
 test_loader = jet_dataloader_test
 
-for epoch in range(1, 20):
+for epoch in range(1, 11):
     for model in models.values():
         model.train()
     train(epoch, models, train_log)
@@ -114,26 +114,40 @@ with torch.no_grad():
     efps_rec = model(tensors).detach().numpy().reshape(len(jetsPL_test), utils.N_EFP)
     #efps_rec.append(efp_rec)
 
-efps_pl_test = np.add(efps_pl_test, 1.0)
-efps_pl_test = np.divide(efps_pl_test, 2.0)
-efps_pl_test = np.multiply(efps_pl_test, normalization)
+# print('efps_pl_test.shape', efps_pl_test[8].shape)
 
-efps_rec = np.add(efps_rec, 1.0)
-efps_rec = np.divide(efps_rec, 2.0)
-efps_rec = np.multiply(efps_pl_test, efps_rec)
+efps_pl_test[:] = np.add(efps_pl_test[:], 1.0)
+efps_pl_test[:] = np.divide(efps_pl_test[:], 2.0)
+efps_pl_test[:] = np.multiply(efps_pl_test[:], normalization)
 
-# print(efps_pl_test.shape)
-# print(efps_rec.shape)
+# print('efps_pl_test.shape', efps_pl_test[8].shape)
 
-fig = plt.figure(figsize=(12.0, 12.0))
+# print('efps_rec.shape', efps_rec[8].shape)
+efps_rec[:] = np.add(efps_rec[:], 1.0)
+efps_rec[:] = np.divide(efps_rec[:], 2.0)
+efps_rec[:] = np.multiply(efps_rec[:], normalization)
+# print('efps_rec.shape', efps_rec[8].shape)
+
+print(efps_pl_test[1].shape)
+print(efps_rec[1][0].shape)
+
+# for idx in range(0, utils.N_EFP):
+#     print(efps_pl_test[2:4][2])
+#     print(efps_pl_test[2:4][5])
+
+fig = plt.figure(figsize=(10.0, 10.0))
 # fig = plt.figure()
 for idx in range(0, utils.N_EFP):
-    histos = (efps_pl_test[:, idx], efps_rec[:, idx])
+    histos = ([el[idx] for el in efps_pl_test], [el[idx] for el in efps_rec])
     # print(efps_pl_test[:, idx].shape)
     ax = fig.add_subplot(6, 6, idx+1)
     # bins = np.linspace(0.0, 0.2, 20)
     # plt.hist(histos, bins=10, range=(0.0, 0.2), label=('INPUT','OUTPUT'), alpha=0.8, color=('g','b'))
-    plt.hist(histos, label=('INPUT', 'OUTPUT'), alpha=0.9, color=('b', 'r'))
+    plt.hist(histos, bins=15, label=('input', 'output'), alpha=0.9, color=('b', 'r'))
+    if 0 == idx:
+        ax.legend()
+    # xtitle = 'EFP_' + str(idx+1)
+    # plt.xlabel(xtitle)
     # x1, x2, y1, y2 = plt.axis()
     # ax = fig.add_subplot(6, 6, idx + 1)
     # plt.hist(efps_rec[:][idx], bins=40, range=(0.0, 1.0), label='OUTPUT')

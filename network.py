@@ -7,7 +7,7 @@ import utils
 
 
 class Encoder(nn.Module):
-    def __init__(self, interm_size=32, latent_size=32, act=torch.sigmoid):
+    def __init__(self, interm_size=32, latent_size=32, act=torch.relu):
         super(Encoder, self).__init__()
         self.fc1 = nn.Linear(utils.N_EFP, interm_size)
         self.fc2 = nn.Linear(interm_size, latent_size)
@@ -20,7 +20,7 @@ class Encoder(nn.Module):
 
 
 class Decoder(nn.Module):
-    def __init__(self, interm_size=32, latent_size=32, act=torch.sigmoid):
+    def __init__(self, interm_size=32, latent_size=32, act=torch.relu):
         super(Decoder, self).__init__()
         self.fc1 = nn.Linear(latent_size, interm_size)
         self.fc2 = nn.Linear(interm_size, utils.N_EFP)
@@ -35,7 +35,7 @@ class Decoder(nn.Module):
 
 
 class Net(nn.Module):
-        def __init__(self, interm_size=32, latent_size=32, loss_fn=F.mse_loss, lr=1e-3, l2=0.):
+        def __init__(self, interm_size=32, latent_size=32, loss_fn=F.mse_loss, lr=1e-4, l2=0.):
             super(Net, self).__init__()
             self.E = Encoder(interm_size, latent_size)
             self.D = Decoder(interm_size, latent_size)

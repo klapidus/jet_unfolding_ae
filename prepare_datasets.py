@@ -56,7 +56,7 @@ def get_jets(vals, rotate=True):
           if rotate is True:
               jetutils.align_jet_pc_to_pos_phi(jet)
           #print(jet)
-          if jet_pt > 90 and jet_pt < 100:
+          if jet_pt > 60 and jet_pt < 80:
               jets.append(jet)
           # if len(jets) > 100:
           #     break
@@ -79,44 +79,49 @@ class JetPicturesDataset(Dataset):
 #if __name__ == '__main__':
 # generate placeholder jets
 
-file = uproot.open("./tree_PbPb_sim.root")
-treePL = file["treePL"]
-treeDL = file["treeDL"]
-eventsPL = treePL.arrays(["pt", "eta", "phi", "jetm"])
-eventsDL = treeDL.arrays(["pt", "eta", "phi", "jetm"])
-valsPL = np.array( list( eventsPL.values() ) )
-valsDL = np.array( list( eventsDL.values() ) )
+# file = uproot.open("./tree_PbPb_sim.root")
+# treePL = file["treePL"]
+# treeDL = file["treeDL"]
+# eventsPL = treePL.arrays(["pt", "eta", "phi", "jetm"])
+# eventsDL = treeDL.arrays(["pt", "eta", "phi", "jetm"])
+# valsPL = np.array( list( eventsPL.values() ) )
+# valsDL = np.array( list( eventsDL.values() ) )
 
-_jetsPL = get_jets(valsPL)
-_jetsDL = get_jets(valsDL)
+# _jetsPL = get_jets(valsPL)
+# _jetsDL = get_jets(valsDL)
 
-print('PL size = ', len(_jetsPL))
-print('DL size = ', len(_jetsDL))
+# print('PL size = ', len(_jetsPL))
+# print('DL size = ', len(_jetsDL))
+
+# np.save('jet_input.npy', _jetsPL)
+_jetsPL = np.load('jet_input.npy', allow_pickle=True)
+# _jetsPL = _jetsPL[:2000]
+print(len(_jetsPL))
 
 BINS = np.linspace(-0.4, 0.4, num=utils.N_IMAGE_BINS+1)
 #print(len(bins))
 
 jetsPL_train = []
-jetsDL_train = []
+# jetsDL_train = []
 jetsPL_test = []
-jetsDL_test = []
+# jetsDL_test = []
 
 jet_images_pl_test = []
-jet_images_dl_test = []
+# jet_images_dl_test = []
 
-efpset = energyflow.EFPSet(('d<=', 3), measure='hadr', beta=0.5)
+efpset = energyflow.EFPSet(('d<=', 4), measure='hadr', beta=0.5)
 # masked_X = [x[x[:,0] > 0] for x in _jetsPL]
 # X = efpset.compute(_jetsPL[3])
 #print(len(X))
 # print(X.shape)
-
-efps_pl = efpset.batch_compute(_jetsPL)[:, 1:]
+efps_pl = efpset.batch_compute(_jetsPL, n_jobs=2)[:, 1:]
 
 normalization = np.max(efps_pl, axis=0)
-# print(np.max(efps_pl, axis=0))
+print(np.max(efps_pl, axis=0))
 efps_pl = np.divide(efps_pl, normalization)
-# print(np.max(efps_pl, axis=0))
+print(np.max(efps_pl, axis=0))
 
+efps_pl_train = []
 efps_pl_test = []
 for efp in efps_pl:
 
@@ -125,10 +130,11 @@ for efp in efps_pl:
 
     if np.random.randint(3) <= 1:
         jetsPL_train.append(torch.from_numpy(efp.astype(np.float32)))
-        jetsDL_train.append(torch.from_numpy(efp.astype(np.float32)))
+        # jetsDL_train.append(torch.from_numpy(efp.astype(np.float32)))
+        efps_pl_train.append(efp)
     else:
         jetsPL_test.append(torch.from_numpy(efp.astype(np.float32)))
-        jetsDL_test.append(torch.from_numpy(efp.astype(np.float32)))
+        # jetsDL_test.append(torch.from_numpy(efp.astype(np.float32)))
         efps_pl_test.append(efp)
 
 # eta phi pt
@@ -163,8 +169,8 @@ for efp in efps_pl:
 #print('len jetsPL_train', len(jetsPL_train))
 #print('len jetsPL_test', len(jetsPL_test))
 
-jet_dataset_train = JetPicturesDataset(jetsPL_train, jetsDL_train)
-jet_dataset_test = JetPicturesDataset(jetsPL_test, jetsDL_test)
+jet_dataset_train = JetPicturesDataset(jetsPL_train, jetsPL_train)
+jet_dataset_test = JetPicturesDataset(jetsPL_test, jetsPL_test)
 #print(len(jet_dataset))
 #print(jet_dataset[100])
 #print(jet_dataset[122:361])

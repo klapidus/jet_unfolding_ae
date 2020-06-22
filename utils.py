@@ -1,6 +1,6 @@
 N_IMAGE_BINS = 6
 #d <= 4
-# N_EFP = 35
+N_EFP = 35
 #d <= 3
-N_EFP = 12
+# N_EFP = 12
 BIN_WIDTH = 0.4/N_IMAGE_BINS/2
